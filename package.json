@@ -1,0 +1,19 @@
+{
+  "name": "r9x_js",
+  "version": "1.0.0",
+  "description": "R9X_JS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devfreelex/R9X_JS.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/devfreelex/R9X_JS/issues"
+  },
+  "homepage": "https://github.com/devfreelex/R9X_JS#readme"
+}
