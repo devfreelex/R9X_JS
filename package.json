@@ -1,6 +1,6 @@
 {
     "name": "r9x_js",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "Reactive Library to SPA.",
     "main": "index.js",
     "scripts": {
