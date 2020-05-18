@@ -239,7 +239,8 @@ const _styleExists = (styleId) => {
 const _bindStyles = (component) => {
     if (_styleExists(component.name)) return
     const styleElement = document.createElement('style')
-    const css = component.template().CSS().trim().replace(/.+{/g, `${component.name} $&`)
+    const css = component.template().CSS(component.name)
+        //.trim().replace(/.+{/g, `${component.name} $&`)
     styleElement.setAttribute('id', component.name)
     styleElement.textContent = css
     document.body.insertAdjacentElement('beforeend', styleElement)
