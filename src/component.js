@@ -44,22 +44,27 @@ const createComponent = () => {
         if (scopeKey.name === 'template') {
             component[scopeKey.name] = scopeKey
         }
-
-
-
-
     })
 
+    component.onInit = () => {
+        const elm = document.querySelectorAll(component.name)
+        component.hooks.forEach(hook => {
+            if (hook.name === 'onInit') {
+                const methods = hook()
+                methods.forEach(method => {
+                    if (method) method({ elm, query, on })
+                })
+            }
+        })
+    }
+
     component.init = (state, context) => {
-        _listenHooks(component.name)
         _bindTemplate()
         render(component.name, state, context)
-        _emitEvent(component.name, 'beforeOnRender')
     }
 
     _component = Object.assign({}, component)
     _components.push(Object.assign({}, component))
-
     return Object.assign({}, component)
 
 }
@@ -101,7 +106,7 @@ const _toCamelCase = (str) => {
 
     arrStr.forEach((strPart, index) => {
         if (index > 0) {
-            name = `${arrStr[0]}${strPart.charAt(0).toUpperCase()}${strPart.slice(1,)}`
+            name = `${arrStr[0]}${strPart.charAt(0).toUpperCase()}${strPart.slice(1)}`
         }
     })
     return name
@@ -164,37 +169,6 @@ const _emitEvent = (componentName, eventName) => {
     eventDrive.fire(componentName, eventName)
 }
 
-const _getHandlers = (hook) => {
-    return hook()
-}
-
-const _execHandlers = (hookName, handlers) => {
-    if (!handlers || !handlers.length) return
-    elm = Array.from(document.querySelectorAll(_component.name))
-    handlers.forEach((handler) => {
-        const handle = handler.bind(null, { elm, query, on })
-        eventDrive.on(_component.name, hookName, handle)
-    })
-}
-
-const _initHook = (hookName, hooks, methods) => {
-    const hook = hooks.find((hook) => {
-        if (hook.name === hookName) return hook
-    })
-    const handlers = _getHandlers(hook)
-    _execHandlers(hook.name, handlers)
-}
-
-const _listenHooks = (componentName) => {
-    const component = _components.find((component) => {
-        if (component.name === componentName) return component
-    })
-    const { hooks, methods } = component
-    hooks.forEach((hook) => {
-        _initHook(hook.name, hooks, methods)
-    })
-}
-
 const on = (eventName, context, callback) => {
     context.forEach((target) => {
         target[`on${eventName}`] = callback
@@ -213,7 +187,7 @@ const _initListeners = (component) => {
         listener({ elm, on, query }, component.methods)
     })
 
-    _emitEvent(component.name, 'afterOnRender')
+    if (typeof component.onInit === 'function') component.onInit()
 }
 
 const logComponent = () => console.log(_component)
