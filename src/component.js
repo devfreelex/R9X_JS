@@ -47,7 +47,7 @@ const createComponent = () => {
     })
 
     component.onInit = () => {
-        const elm = document.querySelectorAll(component.name)
+        const elm = Array.from(document.querySelectorAll(component.name))
         component.hooks.forEach(hook => {
             if (hook.name === 'onInit') {
                 const methods = hook()
