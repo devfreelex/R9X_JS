@@ -2,7 +2,7 @@ import { appFactory } from './src/app'
 import { setScope, createComponent, logComponent, html, css, render } from './src/component'
 import { routerFactory } from './src/router'
 import { getState, setStore, dispatch, watch, mapActions, logState } from './src/store'
-
+import { pubSub } from './src/eventEmitter'
 
 
 //app module
@@ -26,3 +26,6 @@ export { logState }
 
 //router module
 export { routerFactory }
+
+//Event module
+export { pubSub }
