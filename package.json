@@ -1,6 +1,6 @@
 {
     "name": "r9x_js",
-    "version": "1.0.12",
+    "version": "2.0.0",
     "description": "Reactive Library to SPA.",
     "main": "index.js",
     "scripts": {
@@ -10,7 +10,11 @@
         "type": "git",
         "url": "git+https://github.com/devfreelex/R9X_JS.git"
     },
-    "keywords": ["r9x", "R9X", "reactive javascript library R9X"],
+    "keywords": [
+        "r9x",
+        "R9X",
+        "reactive javascript library R9X"
+    ],
     "author": "Rodrigo Rocha",
     "license": "MIT",
     "bugs": {
