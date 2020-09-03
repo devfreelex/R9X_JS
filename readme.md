@@ -442,8 +442,7 @@ export { appHello }
 
 ```
 
-Observe que o componente appName está recebendo a propriedade name através das propriedades reativas. 
+O componente appName está configurado para receber por propriedade o valor de name e exibir dentro da tag p do template. 
 
-Olhando para o template do componente appHello é posśivel observar que a propriedade name do state local, foi fornecida ao componente appName através do chave props diponível no dataset. 
-
-Tudo isso só é possível porque o componente appName foi importado e injetado através da função children no escopo do componente appHello.
+Observe que appName foi importado e anexado como filho de appHello através da função children. Veja também, que o componente
+appHello passa o valor (name) esperado em appName para o mesmo através da propriedade html data-props presente na tag do componente filho.
