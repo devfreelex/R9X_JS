@@ -14,9 +14,22 @@ const componentFactory = () => {
         return { set, get, watch, logger }
     }
 
-    const _getProps = (element) => { 
-        if(!element.dataset || !element.dataset.props) return {}
-        return JSON.parse(element.dataset.props.replace(/\'/g, '"'))
+    const _getProps = (element) => {
+        let object = {}
+        let text = ''
+
+        if (element.dataset && element.dataset.props) {
+            object = JSON.parse(element.dataset.props.replace(/\'/g, '"')) || {}
+        }
+
+        if (element.dataset && element.dataset.text) {
+            text = element.dataset.text || ''
+        }
+
+        return {
+            object, text
+        }
+
     }
 
     const _createProps = (schema, element) => {
@@ -28,7 +41,7 @@ const componentFactory = () => {
     }
 
     const _createEvents = (schema, methods, directives, target) => {
-        if(!schema || !schema.events || typeof schema.events !== 'function') return {}
+        if (!schema || !schema.events || typeof schema.events !== 'function') return {}
         const _domManger = domFactory()
         _domManger.setContext(target)
 
@@ -42,12 +55,12 @@ const componentFactory = () => {
     }
 
     const _createChildren = (schema) => {
-        if(schema && schema.children && typeof schema.children === 'function') return schema.children()
+        if (schema && schema.children && typeof schema.children === 'function') return schema.children()
         return {}
     }
 
     const _createHooks = (schema, state, props, methods) => {
-        if(!schema || !schema.hooks || typeof schema.hooks !== 'function') return null
+        if (!schema || !schema.hooks || typeof schema.hooks !== 'function') return null
         return schema.hooks({
             state,
             props,
@@ -56,50 +69,50 @@ const componentFactory = () => {
     }
 
     const _createMethods = (schema, state, props, elm) => {
-        if(!schema || !schema.methods || typeof schema.methods !== 'function') return {}
+        if (!schema || !schema.methods || typeof schema.methods !== 'function') return {}
         return schema.methods({ state, props, elm })
     }
 
     const _createDirectives = (schema, state, props, elm) => {
-        if(!schema || !schema.directives || typeof schema.directives !== 'function') return {}
+        if (!schema || !schema.directives || typeof schema.directives !== 'function') return {}
         const _domManger = domFactory()
         _domManger.setContext(elm)
-        return schema.directives({ 
-            state, 
-            props, 
+        return schema.directives({
+            state,
+            props,
             elm,
             query: _domManger.query,
             queryAll: _domManger.queryAll,
             on: _domManger.on,
-        
+
         })
     }
 
     const _createStyles = (styles) => {
-        if(!styles || typeof styles !== 'function') return ''
+        if (!styles || typeof styles !== 'function') return ''
         return styles()
     }
 
 
     const _hasChildren = (component) => {
-        if(!component.hasOwnProperty('children')) return false
-        if(!Object.keys(component.children).length) return false
+        if (!component.hasOwnProperty('children')) return false
+        if (!Object.keys(component.children).length) return false
         return true
     }
 
-    const _execHooks = (hookName, hookList) => { 
-        if(!hookList || !hookName) return
-        if(!hookList.hasOwnProperty(hookName)) return
-        if(typeof hookList[hookName] !== 'function') return
+    const _execHooks = (hookName, hookList) => {
+        if (!hookList || !hookName) return
+        if (!hookList.hasOwnProperty(hookName)) return
+        if (typeof hookList[hookName] !== 'function') return
         hookList[hookName]()
     }
 
-    const render = (factory, contexts, newState) => { 
+    const render = (factory, contexts, newState) => {
         const tagName = _createTagName(factory.name)
-        
-        contexts.forEach( context => {
+
+        contexts.forEach(context => {
             const elements = context.querySelectorAll(tagName)
-            elements.forEach( element => {
+            elements.forEach(element => {
                 const component = create(factory, element, element)
                 _execHooks('beforeOnInit', component.hooks)
                 component.render()
@@ -114,11 +127,11 @@ const componentFactory = () => {
         childrenKeys.forEach(childKey => {
             render(component.children[childKey], [component.element])
         })
-    }    
+    }
 
     const _updateView = (config) => {
 
-        const { tagName, element, template, events, props, state, hooks, styles } = config
+        const { tagName, element, template, events, props, state, hooks, methods, styles } = config
         const dataProps = props.get ? props.get() : props
         const dataModel = state.get ? state.get() : state
         const _domManger = domFactory()
@@ -129,7 +142,8 @@ const componentFactory = () => {
 
         element.innerHTML = template({
             props: dataProps,
-            state: dataModel
+            state: dataModel,
+            methods
         })
 
         _domManger.setContext(element)
@@ -139,9 +153,9 @@ const componentFactory = () => {
         _execHooks('afterOnRender', hooks)
 
         if (_hasChildren(config)) _renderChildren(config)
-    }    
+    }
 
-    const create = (factory, target, parent) => { 
+    const create = (factory, target, parent) => {
         const schema = factory()
         const appName = factory.name
         const tagName = _createTagName(factory.name)
@@ -157,7 +171,7 @@ const componentFactory = () => {
         const render = () => _updateView(component)
 
         const component = { ...schema, appName, state, props, tagName, element, children, methods, events, hooks, parentComponentElement, render }
- 
+
         component.element.setAttribute('uId', Math.random().toString().slice(2))
 
         state.watch((newState) => {
