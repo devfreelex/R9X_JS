@@ -3,7 +3,7 @@ import { stateFactory } from './stateFactory.js'
 
 const componentFactory = () => {
 
-    const _createAppName = (text) => {
+    const _createAppName = (factory) => {
         return factory().tagName.split('-').map((part, index) => {
             if (index > 0) {
                 const firstLetter = part.charAt(0).toUpperCase()
