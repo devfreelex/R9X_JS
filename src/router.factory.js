@@ -36,7 +36,7 @@ const routerFactory = () => {
 
     const _initRouteByHash = (hash) => {
         const route = _getRouteByHash(hash)
-        const tagName = _createTagName(route.component.name)
+        const tagName = route.component().tagName
         const componentElement = _createElement(tagName)
         _injectElementNode(componentElement)
         _componentsManager.render(route.component, [_routerElement])

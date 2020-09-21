@@ -3,8 +3,16 @@ import { stateFactory } from './stateFactory.js'
 
 const componentFactory = () => {
 
-    const _createTagName = (text) => {
-        return text.replace(/([A-Z]+|[A-Z]?[a-z]+)(?=[A-Z]|\b)/g, '-$&').slice(1).toLowerCase()
+    const _createAppName = (text) => {
+        return factory().tagName.split('-').map((part, index) => {
+            if (index > 0) {
+                const firstLetter = part.charAt(0).toUpperCase()
+                const partName = `${firstLetter}${part.slice(1)}`
+                return partName
+            }
+            return part
+        }).join('')        
+        // return text.replace(/([A-Z]+|[A-Z]?[a-z]+)(?=[A-Z]|\b)/g, '-$&').slice(1).toLowerCase()
     }
 
     const _createState = (schema) => {
@@ -108,7 +116,7 @@ const componentFactory = () => {
     }
 
     const render = (factory, contexts, newState) => {
-        const tagName = _createTagName(factory.name)
+        const tagName = factory().tagName
 
         contexts.forEach(context => {
             const elements = context.querySelectorAll(tagName)
@@ -158,7 +166,7 @@ const componentFactory = () => {
     const create = (factory, target, parent) => {
         const schema = factory()
         const appName = factory.name
-        const tagName = _createTagName(factory.name)
+        const tagName = _createAppName(factory)
         const element = target
         const parentComponentElement = parent
         const state = _createState(schema)
