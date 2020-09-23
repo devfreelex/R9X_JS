@@ -2,6 +2,8 @@
 
 R9x é uma estrutura para criação de componentes reativos através de funções fábricas.
 
+[Documentação completa: r9x_io](https://devfreelex.github.io/r9x-io)
+
 ### Componentes
 
 Criar um componente é muito fácil. Veja o exemplo abaixo:
