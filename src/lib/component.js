@@ -1,42 +1,45 @@
 import { domFactory } from './dom.factory.js'
 import { stateManagerFactory, propsManagerFactory } from './stateManager.factory.js'
+import { utilsFactory } from './utils.factory.js'
+import { hooksFactory } from './hooks.factory.js'
+
+import { render } from './render.factory.js'
 
 const componentFactory = (factory, element) => {
     const _DOM = domFactory()
-
+    const _utils = utilsFactory(factory)
     const selector = factory.name
         
     const { 
         template,
         events,
-        methods
     } = factory()
 
     const stateManager = stateManagerFactory(factory())
-    const { state } = stateManager
+    const { state, setState } = stateManager
 
     const propsManager = propsManagerFactory(factory(), element)
-    const { props } = propsManager
+    
+    const { props, setProps } = propsManager
 
-    const _isFunction = (param) => {
-        return param && typeof param === 'function'
+    const renderParams = { 
+        element, template, setState, setProps, props, state, 
+        propsManager, events, methods: _utils.getMethods(factory),
+        hooksFactory: factory().hooks, stateManager
     }
 
-    const _getFunction = (key, payload) => {
-        const fn = factory()[key]
-        const emptyObject = {}
-        if(_isFunction(fn)) return fn({ ...payload })
-        return emptyObject
-    }
+    const methods = factory().methods({ 
+        setState: (payload) => setState(payload, render, renderParams), 
+        setProps: (payload) => setProps(payload, render, renderParams) 
+    })
 
-    const render = () => {
-        const methods = _getFunction('methods', { 
-            setState: (payload) => stateManager.setState(payload, render),
-            setProps: (payload) => propsManager.setProps(payload, render),
-        })
-        propsManager.updatePropsElement(element, props)
-        element.innerHTML = template({ state, props })
-        _DOM.bindEvents(element, events, methods)
+    const hooks = hooksFactory(factory.hooks, methods)   
+ 
+
+    const init = () => {
+        hooks.beforeOnInit()
+        render({ ...renderParams, methods, events, hooks })
+        hooks.afterOnInit()
     }
 
     return {
@@ -46,7 +49,8 @@ const componentFactory = (factory, element) => {
         element,
         template,
         methods,
-        render
+        hooks,
+        init
     }
 
 }

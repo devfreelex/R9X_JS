@@ -1,9 +1,14 @@
+import { domFactory } from './dom.factory.js'
+
 const stateManagerFactory = ({ state = {} }) => {
 
-    const setState = (payload, callback) => {
+    const _DOM = domFactory()    
+
+    const setState = (payload, render, params) => { console.log(params)
+        const { element, events, methods } = params
         const deepPayload = JSON.parse(JSON.stringify(payload))
         Object.assign(state, deepPayload)
-        callback()
+        render(params)
     }
 
     return { setState, state }
@@ -20,10 +25,10 @@ const propsManagerFactory = ({ props = {} }, element = {}) => {
         Object.assign(props, element.dataset) 
 
 
-    const setProps = (payload, callback) => {
+    const setProps = (payload, render, params) => {
         const deepPayload = JSON.parse(JSON.stringify(payload))
         Object.assign(props, deepPayload)
-        callback()
+        render(params)
     }
 
     const updatePropsElement = (element, props) => {

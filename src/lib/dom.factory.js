@@ -10,7 +10,7 @@ const domFactory = () => {
     }       
 
     const on = (eventName, eventTarget, handler, useDebounce = false, debounceTime = 0) => {
-
+// console.log(handler)
         if(!Array.isArray(eventTarget)) {
 
             if(useDebounce) {
@@ -43,13 +43,18 @@ const domFactory = () => {
     }   
 
     const bindEvents = (componentElement, events, methods) => {
-        const params = { 
+
+        const listenerParams = { 
             on, 
             queryOnce: (selector) => _queryOnce(selector, componentElement), 
             queryAll: (selector) => _queryAll(selector, componentElement), 
-            methods 
+            methods,
         }
-        const handlers = events(params)
+
+
+        const handlers = events(listenerParams)
+
+
         for (let key in handlers) {
             handlers[key]()
         }

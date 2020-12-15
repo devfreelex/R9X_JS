@@ -4,4 +4,4 @@ import appMain from './components/appMain/index.js'
 
 const element = document.querySelector(`[data-component="appMain"]`)
 const appComponent = componentFactory(appMain, element)
-appComponent.render()
+appComponent.init()

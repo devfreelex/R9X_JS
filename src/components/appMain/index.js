@@ -8,10 +8,19 @@ const template = ({ state, props }) => {
 
 const appMain = () => {
 
-
+    let counter = 0
     const state = {
-        title: 'App Main'
+        title: counter
     }
+
+    const hooks = ({ methods }) => ({
+        // beforeOnRender () {
+        //     methods.loggerBefore()
+        // },
+        // afterOnRender () {
+        //     methods.loggerAfter()
+        // }
+    })
 
     const events = ({ on, queryOnce, methods }) => ({
         onClickTitle () {
@@ -20,10 +29,17 @@ const appMain = () => {
         }
     })
 
-    const methods = ({ setState, setProps }) => ({
-        changeTitle ({ target}) {
-            setState({ title: 'Outro título Props'})
-        }
+    const methods = (params) => ({
+        changeTitle () {
+            console.log(params)
+            params.setState({title: 'outro'})
+        },
+        loggerBefore () {
+            console.log('beforeRender')
+        },
+        loggerAfter () {
+            console.log('after on render')
+        },
     })
 
 
@@ -31,7 +47,8 @@ const appMain = () => {
         state,
         template,
         events,
-        methods
+        methods,
+        hooks
     }
 }
 
