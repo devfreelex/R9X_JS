@@ -29,17 +29,15 @@ const componentFactory = (factory, element) => {
         return emptyObject
     }
 
-
     const render = () => {
         const methods = _getFunction('methods', { 
             setState: (payload) => stateManager.setState(payload, render),
             setProps: (payload) => propsManager.setProps(payload, render),
         })
-        Object.assign(element.dataset, props)
+        propsManager.updatePropsElement(element, props)
         element.innerHTML = template({ state, props })
         _DOM.bindEvents(element, events, methods)
     }
-
 
     return {
         state,

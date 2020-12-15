@@ -1,15 +1,15 @@
 const stateManagerFactory = ({ state = {} }) => {
 
-
     const setState = (payload, callback) => {
         const deepPayload = JSON.parse(JSON.stringify(payload))
         Object.assign(state, deepPayload)
         callback()
     }
 
-
     return { setState, state }
 }
+
+
 
 const propsManagerFactory = ({ props = {} }, element = {}) => {
 
@@ -26,9 +26,14 @@ const propsManagerFactory = ({ props = {} }, element = {}) => {
         callback()
     }
 
+    const updatePropsElement = (element, props) => {
+        Object.assign(element.dataset, props)
+    }
 
-    return { setProps, props }
+    return { setProps, props, updatePropsElement }
 }
+
+
 
 export { 
     stateManagerFactory,

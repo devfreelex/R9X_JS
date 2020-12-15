@@ -41,7 +41,6 @@ const domFactory = () => {
         if(!context) return Array.from(document.querySelectorAll(selector))
         return Array.from(context.querySelectorAll(selector))
     }   
-    
 
     const bindEvents = (componentElement, events, methods) => {
         const params = { 

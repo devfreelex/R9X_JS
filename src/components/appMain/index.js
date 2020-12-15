@@ -1,7 +1,7 @@
 const template = ({ state, props }) => { 
     return /*html*/ `
         <div class="main-wrapper">
-            <h1>${props.title}</h1>
+            <h1>${state.title}</h1>
         </div>
     `
 }
@@ -22,7 +22,7 @@ const appMain = () => {
 
     const methods = ({ setState, setProps }) => ({
         changeTitle ({ target}) {
-            setProps({ title: 'Outro título Props'})
+            setState({ title: 'Outro título Props'})
         }
     })
 
