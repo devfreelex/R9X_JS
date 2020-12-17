@@ -10,7 +10,7 @@ const domFactory = () => {
     }       
 
     const on = (eventName, eventTarget, handler, useDebounce = false, debounceTime = 0) => {
-// console.log(handler)
+
         if(!Array.isArray(eventTarget)) {
 
             if(useDebounce) {
@@ -42,27 +42,12 @@ const domFactory = () => {
         return Array.from(context.querySelectorAll(selector))
     }   
 
-    const bindEvents = (componentElement, events, methods) => {
-
-        const listenerParams = { 
-            on, 
-            queryOnce: (selector) => _queryOnce(selector, componentElement), 
-            queryAll: (selector) => _queryAll(selector, componentElement), 
-            methods,
-        }
-
-
-        const handlers = events(listenerParams)
-
-
-        for (let key in handlers) {
-            handlers[key]()
-        }
-    }
-
-    return {
-        bindEvents
-    }
+    
+    return (element) => ({ 
+        on, 
+        queryOnce: (selector) => _queryOnce(selector, element), 
+        queryAll: (selector) => _queryAll(selector, element)
+    })   
 }
 
 export { domFactory }

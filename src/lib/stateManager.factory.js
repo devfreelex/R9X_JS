@@ -1,46 +1,38 @@
 import { domFactory } from './dom.factory.js'
 
-const stateManagerFactory = ({ state = {} }) => {
-
-    const _DOM = domFactory()    
-
-    const setState = (payload, render, params) => { console.log(params)
-        const { element, events, methods } = params
-        const deepPayload = JSON.parse(JSON.stringify(payload))
-        Object.assign(state, deepPayload)
-        render(params)
+const stateManagerFactory = () => {
+    let data = {
+        state: {},
+        props: {},
     }
 
-    return { setState, state }
+    const listeners = []
+
+    const onChange = (dataView, handler) => {
+        data = dataView
+        listeners.push( handler )
+    }
+
+    const update = (payload, type) => {
+        listeners.forEach( handler => {
+            const newData = {
+                [type]: payload
+            }
+
+            const dataView = Object.assign(data, newData)
+            handler(dataView)
+        })
+    }
+
+
+    return { onChange, update, data }
 }
 
 
 
-const propsManagerFactory = ({ props = {} }, element = {}) => {
-
-    const emptyProps = { dataset: {}}
-
-    !element || !element.dataset ? 
-        Object.assign(props, emptyProps) :
-        Object.assign(props, element.dataset) 
-
-
-    const setProps = (payload, render, params) => {
-        const deepPayload = JSON.parse(JSON.stringify(payload))
-        Object.assign(props, deepPayload)
-        render(params)
-    }
-
-    const updatePropsElement = (element, props) => {
-        Object.assign(element.dataset, props)
-    }
-
-    return { setProps, props, updatePropsElement }
-}
 
 
 
 export { 
-    stateManagerFactory,
-    propsManagerFactory 
+    stateManagerFactory
 }

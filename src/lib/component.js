@@ -1,55 +1,70 @@
 import { domFactory } from './dom.factory.js'
-import { stateManagerFactory, propsManagerFactory } from './stateManager.factory.js'
+import { stateManagerFactory } from './stateManager.factory.js'
 import { utilsFactory } from './utils.factory.js'
 import { hooksFactory } from './hooks.factory.js'
 
-import { render } from './render.factory.js'
-
 const componentFactory = (factory, element) => {
-    const _DOM = domFactory()
+    const _domHandlerFactory = domFactory()
     const _utils = utilsFactory(factory)
     const selector = factory.name
-        
+    const dataProps = JSON.parse(JSON.stringify(element.dataset))  
+
     const { 
         template,
         events,
+        state,
+        props,
+        methods
     } = factory()
 
-    const stateManager = stateManagerFactory(factory())
-    const { state, setState } = stateManager
+    const stateManager = stateManagerFactory()
+    const propsManager = stateManagerFactory()
 
-    const propsManager = propsManagerFactory(factory(), element)
-    
-    const { props, setProps } = propsManager
 
-    const renderParams = { 
-        element, template, setState, setProps, props, state, 
-        propsManager, events, methods: _utils.getMethods(factory),
-        hooksFactory: factory().hooks, stateManager
+    const dataView = { 
+        props: Object.assign(props, dataProps), 
+        state 
+    }
+    stateManager.onChange(dataView, (data) => _render(data))
+    propsManager.onChange(dataView, (data) => _render(data))
+
+    const _getMethods = () => {
+
+        if(!methods || typeof methods !== 'function') return {}
+        
+        return methods({
+            setState: (payload) => stateManager.update(payload, 'state'),
+            setProps: (payload) => propsManager.update(payload, 'props')
+        })
     }
 
-    const methods = factory().methods({ 
-        setState: (payload) => setState(payload, render, renderParams), 
-        setProps: (payload) => setProps(payload, render, renderParams) 
-    })
 
-    const hooks = hooksFactory(factory.hooks, methods)   
+
+    const _bindEvents = () => {
+        if(!events || typeof events !== 'function') return
+
+        const methods = _getMethods()
+        
+        const domHandlers = _domHandlerFactory(element)
+        const handlers = events({ methods, ...domHandlers})
+        const keys = Object.keys(handlers)
+
+        keys.forEach( key => handlers[key]())
+    }
  
+    const _render = () => {        
+        Object.assign(element.dataset, dataView.props)
+        element.innerHTML = template(dataView)
+        _bindEvents()
+    }
 
     const init = () => {
-        hooks.beforeOnInit()
-        render({ ...renderParams, methods, events, hooks })
-        hooks.afterOnInit()
+
+        _render()
+
     }
 
     return {
-        state,
-        props,
-        selector,
-        element,
-        template,
-        methods,
-        hooks,
         init
     }
 

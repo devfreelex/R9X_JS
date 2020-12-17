@@ -1,7 +1,10 @@
 const template = ({ state, props }) => { 
     return /*html*/ `
         <div class="main-wrapper">
-            <h1>${state.title}</h1>
+            <p>props: ${props.title}</p>
+            <p>state: ${state.title}</p>
+
+            <h1>Change value</h1>
         </div>
     `
 }
@@ -9,7 +12,12 @@ const template = ({ state, props }) => {
 const appMain = () => {
 
     let counter = 0
+
     const state = {
+        title: counter,
+    }
+
+    const props = {
         title: counter
     }
 
@@ -29,10 +37,11 @@ const appMain = () => {
         }
     })
 
-    const methods = (params) => ({
+    const methods = ({ setProps, setState }) => ({
         changeTitle () {
-            console.log(params)
-            params.setState({title: 'outro'})
+            counter = counter + 1
+            setProps({title: counter})
+            setState({title: counter})
         },
         loggerBefore () {
             console.log('beforeRender')
@@ -45,6 +54,7 @@ const appMain = () => {
 
     return {
         state,
+        props,
         template,
         events,
         methods,
