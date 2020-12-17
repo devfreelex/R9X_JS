@@ -23,10 +23,7 @@ const appMain = () => {
 
     const hooks = ({ methods }) => ({
         beforeOnInit () {
-            methods.loggerBefore()
-        },
-        afterOnInit () {
-            methods.loggerAfter()
+            methods.setPropsAndState()
         }
     })
 
@@ -43,11 +40,10 @@ const appMain = () => {
             setState({title: counter})
             setProps({title: counter})
         },
-        loggerBefore () {
-            console.log(getState())
-        },
-        loggerAfter () {
-            console.log(getProps())
+        setPropsAndState () {
+            counter = counter + 1
+            setState({title: counter})
+            setProps({title: counter})
         },
     })
 
