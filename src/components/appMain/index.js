@@ -22,12 +22,12 @@ const appMain = () => {
     }
 
     const hooks = ({ methods }) => ({
-        // beforeOnRender () {
-        //     methods.loggerBefore()
-        // },
-        // afterOnRender () {
-        //     methods.loggerAfter()
-        // }
+        beforeOnInit () {
+            methods.loggerBefore()
+        },
+        afterOnInit () {
+            methods.loggerAfter()
+        }
     })
 
     const events = ({ on, queryOnce, methods }) => ({
@@ -37,17 +37,17 @@ const appMain = () => {
         }
     })
 
-    const methods = ({ setProps, setState }) => ({
+    const methods = ({ setProps, setState, getState, getProps }) => ({
         changeTitle () {
             counter = counter + 1
-            setProps({title: counter})
             setState({title: counter})
+            setProps({title: counter})
         },
         loggerBefore () {
-            console.log('beforeRender')
+            console.log(getState())
         },
         loggerAfter () {
-            console.log('after on render')
+            console.log(getProps())
         },
     })
 

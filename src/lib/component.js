@@ -10,11 +10,12 @@ const componentFactory = (factory, element) => {
     const dataProps = JSON.parse(JSON.stringify(element.dataset))  
 
     const { 
-        template,
-        events,
         state,
         props,
-        methods
+        template,
+        events,
+        methods,
+        hooks,
     } = factory()
 
     const stateManager = stateManagerFactory()
@@ -25,6 +26,7 @@ const componentFactory = (factory, element) => {
         props: Object.assign(props, dataProps), 
         state 
     }
+
     stateManager.onChange(dataView, (data) => _render(data))
     propsManager.onChange(dataView, (data) => _render(data))
 
@@ -34,17 +36,33 @@ const componentFactory = (factory, element) => {
         
         return methods({
             setState: (payload) => stateManager.update(payload, 'state'),
-            setProps: (payload) => propsManager.update(payload, 'props')
+            setProps: (payload) => propsManager.update(payload, 'props'),
+            getProps: () => dataView.props,
+            getState: () => dataView.state,
         })
     }
 
+    const _getHooks = () => {
+        if(!hooks || typeof hooks !== 'function') return {}
 
+        const emptyFunction = () => {}
+
+        const emptyHooks = {
+            beforeOnInit: emptyFunction,
+            afterOnInit: emptyFunction,
+            beforeOnRender: emptyFunction,
+            afterOnRender: emptyFunction,
+        }
+
+        const methods = _getMethods()
+        return Object.assign(emptyHooks, hooks({ methods }))
+
+    }
 
     const _bindEvents = () => {
         if(!events || typeof events !== 'function') return
 
         const methods = _getMethods()
-        
         const domHandlers = _domHandlerFactory(element)
         const handlers = events({ methods, ...domHandlers})
         const keys = Object.keys(handlers)
@@ -52,15 +70,20 @@ const componentFactory = (factory, element) => {
         keys.forEach( key => handlers[key]())
     }
  
-    const _render = () => {        
+    const _render = () => { 
+        const hooks = _getHooks()       
+        hooks.beforeOnRender()
         Object.assign(element.dataset, dataView.props)
         element.innerHTML = template(dataView)
         _bindEvents()
+        hooks.afterOnRender()
     }
 
     const init = () => {
-
+        const hooks = _getHooks()
+        hooks.beforeOnInit()
         _render()
+        hooks.afterOnInit()
 
     }
 
