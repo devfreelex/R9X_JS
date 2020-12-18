@@ -1,205 +1,207 @@
 import { domFactory } from './dom.factory.js'
-import { stateFactory } from './stateFactory.js'
+import { stateManagerFactory } from './stateManager.factory.js'
 
-const componentFactory = () => {
+const componentFactory = (factory, element) => {
+    const _DOM = domFactory()(element)
+    const selector = factory.name
+    const dataProps = JSON.parse(JSON.stringify(element.dataset || {} )) 
+    const _executers = []
 
-    const _createAppName = (factory) => {
-        return factory().tagName.split('-').map((part, index) => {
-            if (index > 0) {
-                const firstLetter = part.charAt(0).toUpperCase()
-                const partName = `${firstLetter}${part.slice(1)}`
-                return partName
-            }
-            return part
-        }).join('')        
-        // return text.replace(/([A-Z]+|[A-Z]?[a-z]+)(?=[A-Z]|\b)/g, '-$&').slice(1).toLowerCase()
+    const { 
+        state,
+        props,
+        template,
+        events,
+        methods,
+        hooks,
+        children,
+        expose,
+        styles
+    } = factory()
+
+
+    const stateManager = stateManagerFactory()
+    const propsManager = stateManagerFactory()
+    let exposed = {}
+
+    const dataView = { 
+        props: Object.assign(props ? props : {}, dataProps), 
+        state 
     }
 
-    const _createState = (schema) => {
-        const stateManager = stateFactory()
-        stateManager.merge(schema.state)
-        const { set, get, watch, logger } = stateManager
-        return { set, get, watch, logger }
+    stateManager.onChange(dataView, (data) => {
+        _updateExposed(data)
+        _render(data)
+        _runExecuters()
+    })
+
+    propsManager.onChange(dataView, (data) => {
+        _updateExposed(data)
+        _render(data)
+        _runExecuters()
+    })
+
+    const _exists = (data) => {
+        const keys = Object.keys(data)
+        return keys.length
     }
 
-    const _getProps = (element) => {
-        let object = {}
-        let text = ''
+    const _updateExposed = ({ props, state }) => {
 
-        if (element.dataset && element.dataset.props) {
-            object = JSON.parse(element.dataset.props.replace(/\'/g, '"')) || {}
+        exposed.props = {}
+        exposed.state = {}
+
+        if(_exists(props)) Object.assign(exposed.props, props)
+        if(_exists(state)) Object.assign(exposed.state, state)
+
+    }
+
+    const _getExposedData = () => {
+        if(!expose || typeof expose !== 'function') {
+            return exposed = {}
         }
 
-        if (element.dataset && element.dataset.text) {
-            text = element.dataset.text || ''
-        }
-
-        return {
-            object, text
-        }
-
+        const methods = _getMethods()
+        return exposed = expose({ methods })
     }
 
-    const _createProps = (schema, element) => {
-        const stateManager = stateFactory()
-        const props = _getProps(element)
-        stateManager.merge(props)
-        const { set, get, watch } = stateManager
-        return { set, get, watch }
-    }
-
-    const _createEvents = (schema, methods, directives, target) => {
-        if (!schema || !schema.events || typeof schema.events !== 'function') return {}
-        const _domManger = domFactory()
-        _domManger.setContext(target)
-
-        return schema.events({
-            on: _domManger.on,
-            query: _domManger.query,
-            queryAll: _domManger.queryAll,
-            methods,
-            directives
-        })
-    }
-
-    const _createChildren = (schema) => {
-        if (schema && schema.children && typeof schema.children === 'function') return schema.children()
-        return {}
-    }
-
-    const _createHooks = (schema, state, props, methods) => {
-        if (!schema || !schema.hooks || typeof schema.hooks !== 'function') return null
-        return schema.hooks({
-            state,
-            props,
-            methods,
-        })
-    }
-
-    const _createMethods = (schema, state, props, elm) => {
-        if (!schema || !schema.methods || typeof schema.methods !== 'function') return {}
-        return schema.methods({ state, props, elm })
-    }
-
-    const _createDirectives = (schema, state, props, elm) => {
-        if (!schema || !schema.directives || typeof schema.directives !== 'function') return {}
-        const _domManger = domFactory()
-        _domManger.setContext(elm)
-        return schema.directives({
-            state,
-            props,
-            elm,
-            query: _domManger.query,
-            queryAll: _domManger.queryAll,
-            on: _domManger.on,
-
-        })
-    }
-
-    const _createStyles = (styles) => {
-        if (!styles || typeof styles !== 'function') return ''
-        return styles()
-    }
-
-
-    const _hasChildren = (component) => {
-        if (!component.hasOwnProperty('children')) return false
-        if (!Object.keys(component.children).length) return false
-        return true
-    }
-
-    const _execHooks = (hookName, hookList) => {
-        if (!hookList || !hookName) return
-        if (!hookList.hasOwnProperty(hookName)) return
-        if (typeof hookList[hookName] !== 'function') return
-        hookList[hookName]()
-    }
-
-    const render = (factory, contexts, newState) => {
-        const tagName = factory().tagName
-
-        contexts.forEach(context => {
-            const elements = context.querySelectorAll(tagName)
-            elements.forEach(element => {
-                const component = create(factory, element, element)
-                _execHooks('beforeOnInit', component.hooks)
-                component.render()
-                _execHooks('afterOnInit', component.hooks)
+    const _getChildren = () => {
+        if(!children || typeof children !== 'function') return {}
+        
+        const factories = children()
+        const factoriesKey = Object.keys(factories)
+        
+        const components = factoriesKey.flatMap( key => {
+            const selector = `[data-component="${key}"]`
+            const elements = _DOM.queryAll(selector)
+            
+            const schemas = elements.map( childElement => {
+                const factory = factories[key]
+                return { factory, childElement }
             })
+
+            return schemas.map(({factory, childElement}) => {
+                return componentFactory(factory.bind(null, {exposed}), childElement)
+            })           
+        })
+
+        return components
+
+    }
+    const _getMethods = () => {
+
+        if(!methods || typeof methods !== 'function') return {}
+        
+        return methods({
+            setState: (payload) => stateManager.update(payload, 'state'),
+            setProps: (payload) => propsManager.update(payload, 'props'),
+            getProps: () => dataView.props,
+            getState: () => dataView.state,
         })
     }
 
-    const _renderChildren = (component) => {
-        if (!component || !component.children) return
-        const childrenKeys = Object.keys(component.children)
-        childrenKeys.forEach(childKey => {
-            render(component.children[childKey], [component.element])
-        })
+    const _getHooks = () => {
+        const emptyFunction = () => {}
+
+        const emptyHooks = {
+            beforeOnInit: emptyFunction,
+            afterOnInit: emptyFunction,
+            beforeOnRender: emptyFunction,
+            afterOnRender: emptyFunction,
+        }
+
+        if(!hooks || typeof hooks !== 'function') return emptyHooks
+
+        const methods = _getMethods()
+        return Object.assign(emptyHooks, hooks({ methods }))
+
     }
 
-    const _updateView = (config) => {
+    const _bindEvents = () => {
+        if(!events || typeof events !== 'function') return
 
-        const { tagName, element, template, events, props, state, hooks, methods, styles } = config
-        const dataProps = props.get ? props.get() : props
-        const dataModel = state.get ? state.get() : state
-        const _domManger = domFactory()
+        const methods = _getMethods()
+        const handlers = events({ methods, ..._DOM})
+        const keys = Object.keys(handlers)
 
-        element.dataset.props = JSON.stringify(dataProps).replace(/\"/g, "'")
-
-        _execHooks('beforeOnRender', hooks)
-
-        element.innerHTML = template({
-            props: dataProps,
-            state: dataModel,
-            methods
-        })
-
-        _domManger.setContext(element)
-        _domManger.bindEventListeners(events)
-        _domManger.bindStyles(tagName, _createStyles(styles))
-
-        _execHooks('afterOnRender', hooks)
-
-        if (_hasChildren(config)) _renderChildren(config)
+        keys.forEach( key => handlers[key]())
     }
 
-    const create = (factory, target, parent) => {
-        const schema = factory()
-        const appName = factory.name
-        const tagName = _createAppName(factory)
-        const element = target
-        const parentComponentElement = parent
-        const state = _createState(schema)
-        const props = _createProps(schema, element)
-        const methods = _createMethods(schema, state, props, element)
-        const directives = _createDirectives(schema, state, props, element)
-        const events = _createEvents(schema, methods, directives, element)
-        const hooks = _createHooks(schema, state, props, methods)
-        const children = _createChildren(schema)
-        const render = () => _updateView(component)
-
-        const component = { ...schema, appName, state, props, tagName, element, children, methods, events, hooks, parentComponentElement, render }
-
-        component.element.setAttribute('uId', Math.random().toString().slice(2))
-
-        state.watch((newState) => {
-            Object.assign(component.state, newState)
-            _updateView(component)
+    const _initChildrenComponents = () => {
+        const components = _getChildren()
+        if(!Array.isArray(components) || !components.length) return
+        components.forEach( component => {
+            component.init()
         })
+    }
+        
+    const taggedTemplate = (tags, ...values) => {
+        return tags.map( (tag, index) => {
+            return `${tag}${values[index] || ''}`
+        }).join('')
+    } 
 
-        props.watch((newState) => {
-            Object.assign(component.props, newState)
-            _updateView(component)
-        })
+    const _createSelector = (selector) => {
+        if(!selector) return
+        return selector.trim().replace(/bound/g, '').replace(/\W+/g, '')
+    }
 
-        return component
+    const _createStyles = () => {
+        const {styles} = factory()
+        if (!styles || typeof styles !== 'function') return ''
+        const selectorId = _createSelector(selector)
+        const ctx = `[data-component="${selectorId}"]`
+        const css = taggedTemplate
+        return styles({ ctx, css })
+    }    
+
+    const _bindStyles = (selector, styles) => {
+        if(!styles || !selector) return 
+        const selectorId = _createSelector(selector)
+        const styleExists = document.querySelector(`style#${selectorId}`) ? true : false
+        if(styleExists) return
+
+        const styleElement = document.createElement('style')
+        styleElement.setAttribute('id', selectorId)
+        styleElement.textContent = styles
+        document.head.append(styleElement)
+    }
+ 
+    const _render = () => { 
+        const hooks = _getHooks()       
+        hooks.beforeOnRender()
+        Object.assign(element.dataset, dataView.props)
+        element.innerHTML = template({ ...dataView, html: taggedTemplate })
+        _bindEvents()
+        _bindStyles(selector, _createStyles())
+        _initChildrenComponents()
+        hooks.afterOnRender()
+    }
+
+    const _runExecuters = () => {
+        _executers.forEach( exec => exec())
+
+    }
+
+    const _setExecuters = (callback) => {
+        if(!callback || typeof callback !== 'function') return
+        _executers.push(callback)
+    }
+
+    const init = (exec) => {
+        _setExecuters(exec)
+        exposed = _getExposedData()
+        const hooks = _getHooks()
+        hooks.beforeOnInit()
+        _render()
+        hooks.afterOnInit()
+        _runExecuters()
     }
 
     return {
-        create,
-        render,
+        init
     }
-}
 
+}
 
 export { componentFactory }

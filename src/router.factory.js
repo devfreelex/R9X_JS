@@ -1,13 +1,12 @@
-import { componentFactory } from './component.factory.js'
+import { componentFactory } from './component.js'
 
 const routerFactory = () => {
 
     let _config = {}
     let _routerElement = null
-    const _componentsManager = componentFactory()
 
     const _setRouterElement = () => {
-        _routerElement = document.querySelector('router-view')
+        _routerElement = document.querySelector('[data-component="routerView"]')
     }
 
     const _redirectTo = (hash) => window.location.hash = hash
@@ -16,9 +15,15 @@ const routerFactory = () => {
         return text.replace(/([A-Z]+|[A-Z]?[a-z]+)(?=[A-Z]|\b)/g, '-$&').slice(1).toLowerCase()
     }    
 
-    const _createElement = (tagName) => document.createElement(tagName)
+    const _createElement = (name) => { 
+        const element = document.createElement('div')
+        element.dataset.component = name
+        return element
+    }
 
-    const _injectElementNode = (nodeElement) => _routerElement.innerHTML = nodeElement.outerHTML
+    const _injectElementNode = (nodeElement) => {
+        _routerElement.innerHTML = nodeElement.outerHTML
+    }
 
     const _initFirstRoute = () => {
         const hash = _config['firstRoute'].hash
@@ -34,12 +39,20 @@ const routerFactory = () => {
         return selectedRoute ? selectedRoute : defaultRoute
     }
 
+    const _renderComponents = (factory) => {
+        const selector = `[data-component="${factory.name}"]`
+        const element = _createElement(factory.name)
+        _injectElementNode(element)
+
+        const componentElement = _routerElement.querySelector(selector)
+        const component = componentFactory(factory, componentElement)
+        component.init()
+    }
+
     const _initRouteByHash = (hash) => {
-        const route = _getRouteByHash(hash)
-        const tagName = route.component().tagName
-        const componentElement = _createElement(tagName)
-        _injectElementNode(componentElement)
-        _componentsManager.render(route.component, [_routerElement])
+        const { component: factory } = _getRouteByHash(hash)
+        _renderComponents(factory)
+
     }
 
     const _listenOnHashChange = () => {

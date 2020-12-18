@@ -1,5 +1,5 @@
-import { componentFactory } from './component.js'
-import { routerFactory } from './router.js'
+import { componentFactory } from './component.factory.js'
+import { routerFactory } from './router.factory.js'
 
 const r9x = ({ appMain, routes = [] }) => {
 
