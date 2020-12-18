@@ -51,3 +51,4 @@ const domFactory = () => {
 }
 
 export { domFactory }
+

@@ -21,7 +21,6 @@ const r9x = ({ appMain, routes = [] }) => {
             const component = componentFactory(appMain, element)
             component.init(_initRouter)    
         })
-
     }
 
     return {
