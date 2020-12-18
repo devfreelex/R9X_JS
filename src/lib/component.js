@@ -1,11 +1,9 @@
 import { domFactory } from './dom.factory.js'
 import { stateManagerFactory } from './stateManager.factory.js'
 import { utilsFactory } from './utils.factory.js'
-import { hooksFactory } from './hooks.factory.js'
 
 const componentFactory = (factory, element) => {
     const _DOM = domFactory()(element)
-    const _utils = utilsFactory(factory)
     const selector = factory.name
     const dataProps = JSON.parse(JSON.stringify(element.dataset || {} )) 
     const _executers = []
