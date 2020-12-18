@@ -1,13 +1,13 @@
 import template from './template.js'
 import styles from './styles.js'
-import appChild from '../appChild/index.js'
 
-const appMain = () => {
+const appHome = () => {
+
 
     let counter = 0
 
     const state = {
-        title: 0,
+        title: 'App Home',
     }
 
     const props = {
@@ -56,4 +56,4 @@ const appMain = () => {
     }
 }
 
-export default appMain
+export default appHome

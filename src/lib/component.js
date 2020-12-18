@@ -8,6 +8,7 @@ const componentFactory = (factory, element) => {
     const _utils = utilsFactory(factory)
     const selector = factory.name
     const dataProps = JSON.parse(JSON.stringify(element.dataset || {} )) 
+    const _executers = []
 
     const { 
         state,
@@ -32,11 +33,15 @@ const componentFactory = (factory, element) => {
     }
 
     stateManager.onChange(dataView, (data) => {
+        _updateExposed(data)
         _render(data)
+        _runExecuters()
     })
+
     propsManager.onChange(dataView, (data) => {
         _updateExposed(data)
         _render(data)
+        _runExecuters()
     })
 
     const _exists = (data) => {
@@ -176,13 +181,24 @@ const componentFactory = (factory, element) => {
         hooks.afterOnRender()
     }
 
-    const init = () => {
+    const _runExecuters = () => {
+        _executers.forEach( exec => exec())
+
+    }
+
+    const _setExecuters = (callback) => {
+        if(!callback || typeof callback !== 'function') return
+        _executers.push(callback)
+    }
+
+    const init = (exec) => {
+        _setExecuters(exec)
         exposed = _getExposedData()
         const hooks = _getHooks()
         hooks.beforeOnInit()
         _render()
         hooks.afterOnInit()
-
+        _runExecuters()
     }
 
     return {

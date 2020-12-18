@@ -8,6 +8,14 @@ export default ({ state, props }) => {
                 <div data-component="appChild"></div>
                 <div data-component="appChild"></div>
             <hr>
+
+            <hr>
+            <hr>
+            <hr>
+                <div data-component="routerView"></div>
+            <hr>
+            <hr>
+            <hr>
         </div>
     `
 }
