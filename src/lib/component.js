@@ -17,7 +17,8 @@ const componentFactory = (factory, element) => {
         methods,
         hooks,
         children,
-        expose
+        expose,
+        styles
     } = factory()
 
 
@@ -31,7 +32,6 @@ const componentFactory = (factory, element) => {
     }
 
     stateManager.onChange(dataView, (data) => {
-        
         _render(data)
     })
     propsManager.onChange(dataView, (data) => {
@@ -132,13 +132,46 @@ const componentFactory = (factory, element) => {
             component.init()
         })
     }
+        
+    const taggedTemplate = (tags, ...values) => {
+        return tags.map( (tag, index) => {
+            return `${tag}${values[index] || ''}`
+        }).join('')
+    } 
+
+    const _createSelector = (selector) => {
+        if(!selector) return
+        return selector.trim().replace(/bound/g, '').replace(/\W+/g, '')
+    }
+
+    const _createStyles = () => {
+        const {styles} = factory()
+        if (!styles || typeof styles !== 'function') return ''
+        const selectorId = _createSelector(selector)
+        const ctx = `[data-component="${selectorId}"]`
+        const css = taggedTemplate
+        return styles({ ctx, css })
+    }    
+
+    const _bindStyles = (selector, styles) => {
+        if(!styles || !selector) return 
+        const selectorId = _createSelector(selector)
+        const styleExists = document.querySelector(`style#${selectorId}`) ? true : false
+        if(styleExists) return
+
+        const styleElement = document.createElement('style')
+        styleElement.setAttribute('id', selectorId)
+        styleElement.textContent = styles
+        document.head.append(styleElement)
+    }
  
     const _render = () => { 
         const hooks = _getHooks()       
         hooks.beforeOnRender()
         Object.assign(element.dataset, dataView.props)
-        element.innerHTML = template(dataView)
+        element.innerHTML = template({ ...dataView, html: taggedTemplate })
         _bindEvents()
+        _bindStyles(selector, _createStyles())
         _initChildrenComponents()
         hooks.afterOnRender()
     }
