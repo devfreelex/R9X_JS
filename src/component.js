@@ -1,6 +1,5 @@
 import { domFactory } from './dom.factory.js'
 import { stateManagerFactory } from './stateManager.factory.js'
-import { utilsFactory } from './utils.factory.js'
 
 const componentFactory = (factory, element) => {
     const _DOM = domFactory()(element)

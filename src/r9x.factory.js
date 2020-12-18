@@ -1,7 +1,7 @@
 import { componentFactory } from './component.js'
 import { routerFactory } from './router.js'
 
-const appFactory = ({ appMain, routes = [] }) => {
+const r9x = ({ appMain, routes = [] }) => {
 
     const _router = routerFactory()
     
@@ -29,4 +29,4 @@ const appFactory = ({ appMain, routes = [] }) => {
     }
 }
 
-export { appFactory }
+export { r9x }

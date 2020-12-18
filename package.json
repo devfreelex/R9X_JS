@@ -1,0 +1,29 @@
+{
+    "name": "r9x_js",
+    "version": "3.0.0",
+    "description": "Reactive Library to SPA.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/devfreelex/R9X_JS.git"
+    },
+    "keywords": [
+        "r9x",
+        "R9X",
+        "reactive javascript library R9X"
+    ],
+    "author": "Rodrigo Rocha",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/devfreelex/R9X_JS/issues"
+    },
+    "homepage": "https://github.com/devfreelex/R9X_JS#readme",
+    "dependencies": {
+        "@babel/cli": "^7.8.4",
+        "mdn-polyfills": "^5.20.0",
+        "whatwg-fetch": "^3.0.0"
+    }
+}
