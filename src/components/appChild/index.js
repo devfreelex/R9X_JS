@@ -15,9 +15,7 @@ const appChild = ({ exposed }) => {
     const props = exposed.props
 
     const hooks = ({ methods }) => ({
-        beforeOnInit () {
-        //    methods.updateState()
-        }
+
     })
 
 
@@ -34,9 +32,8 @@ const appChild = ({ exposed }) => {
 
         update () {
 
-            exposed.updatePropsTitle({ 
-                props: getProps(),
-                state: getState()
+            exposed.updatePropTitle({ 
+                props: getProps()
              })
         }
     })

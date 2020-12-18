@@ -9,9 +9,6 @@ const template = ({ state, props }) => {
             <hr>
                 <div data-component="appChild"></div>
                 <div data-component="appChild"></div>
-                <div data-component="appChild"></div>
-                <div data-component="appChild"></div>
-                <div data-component="appChild"></div>
             <hr>
         </div>
     `
@@ -32,7 +29,7 @@ const appMain = () => {
     const expose = ({ methods }) => ({
         props,
         state,
-        updatePropsTitle: methods.update,
+        updatePropTitle: methods.update,
     })
 
     const children = () => ({
@@ -42,17 +39,21 @@ const appMain = () => {
     const events = ({ on, queryOnce, methods }) => ({
         onClickTitle () {
             const title = queryOnce('h1')    
-            on('click', title, methods.setState)        
+            on('click', title, methods.setTitle)        
         }
     })
 
     const methods = ({ setProps, setState, getState, getProps }) => ({
         update () {
-            counter = counter + 1
-            setProps({ title: counter})
+            const { title } = getProps()
+            setProps({ title: parseInt(title + 1)})
         },
-
-
+        setTitle () {
+            counter = counter + 1
+            const { title }  = getProps()
+            setState({ title: counter })
+            setProps({ title: parseInt(title + 1) })
+        }
     })
 
 
