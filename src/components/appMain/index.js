@@ -22,41 +22,37 @@ const appMain = () => {
     let counter = 0
 
     const state = {
-        title: counter,
+        title: 0,
     }
 
     const props = {
-        title: counter
+        title: 0
     }
+
+    const expose = ({ methods }) => ({
+        props,
+        state,
+        updatePropsTitle: methods.update,
+    })
 
     const children = () => ({
         appChild
     })
 
-    const hooks = ({ methods }) => ({
-        beforeOnInit () {
-            methods.setPropsAndState()
-        }
-    })
-
     const events = ({ on, queryOnce, methods }) => ({
         onClickTitle () {
             const title = queryOnce('h1')    
-            on('click', title, methods.changeTitle)        
+            on('click', title, methods.setState)        
         }
     })
 
     const methods = ({ setProps, setState, getState, getProps }) => ({
-        changeTitle () {
+        update () {
             counter = counter + 1
-            setState({title: counter})
-            setProps({title: counter})
+            setProps({ title: counter})
         },
-        setPropsAndState () {
-            counter = counter + 1
-            setState({title: counter})
-            setProps({title: counter})
-        },
+
+
     })
 
 
@@ -66,8 +62,8 @@ const appMain = () => {
         template,
         events,
         methods,
-        hooks,
-        children
+        children,
+        expose
     }
 }
 

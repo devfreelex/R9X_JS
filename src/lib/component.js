@@ -17,19 +17,51 @@ const componentFactory = (factory, element) => {
         methods,
         hooks,
         children,
+        expose
     } = factory()
+
 
     const stateManager = stateManagerFactory()
     const propsManager = stateManagerFactory()
-
+    let exposed = {}
 
     const dataView = { 
         props: Object.assign(props ? props : {}, dataProps), 
         state 
     }
 
-    stateManager.onChange(dataView, (data) => _render(data))
-    propsManager.onChange(dataView, (data) => _render(data))
+    stateManager.onChange(dataView, (data) => {
+        
+        _render(data)
+    })
+    propsManager.onChange(dataView, (data) => {
+        _updateExposed(data)
+        _render(data)
+    })
+
+    const _exists = (data) => {
+        const keys = Object.keys(data)
+        return keys.length
+    }
+
+    const _updateExposed = ({ props, state }) => {
+
+        exposed.props = {}
+        exposed.state = {}
+
+        if(_exists(props)) Object.assign(exposed.props, props)
+        if(_exists(state)) Object.assign(exposed.state, state)
+
+    }
+
+    const _getExposedData = () => {
+        if(!expose || typeof expose !== 'function') {
+            return exposed = {}
+        }
+
+        const methods = _getMethods()
+        return exposed = expose({ methods })
+    }
 
     const _getChildren = () => {
         if(!children || typeof children !== 'function') return {}
@@ -47,8 +79,7 @@ const componentFactory = (factory, element) => {
             })
 
             return schemas.map(({factory, childElement}) => {
-                const parentDataView = JSON.parse(JSON.stringify(dataView))
-                return componentFactory(factory.bind(null, parentDataView), childElement)
+                return componentFactory(factory.bind(null, {exposed}), childElement)
             })           
         })
 
@@ -113,6 +144,7 @@ const componentFactory = (factory, element) => {
     }
 
     const init = () => {
+        exposed = _getExposedData()
         const hooks = _getHooks()
         hooks.beforeOnInit()
         _render()

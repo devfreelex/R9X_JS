@@ -9,13 +9,46 @@ const template = ({ state, props }) => /*html*/ `
 const styles = () => {}
 
 
-const appChild = ({state, props}) => { 
+const appChild = ({ exposed }) => { 
+
+    const state = exposed.state
+    const props = exposed.props
+
+    const hooks = ({ methods }) => ({
+        beforeOnInit () {
+        //    methods.updateState()
+        }
+    })
+
+
+    const events = ({ on, queryOnce, methods }) => ({
+        onClick () {
+            const elm = queryOnce('.child-wrapper')
+            on('click', elm, () => {
+                methods.update()
+            })
+        }
+    })
+
+    const methods = ({ setState, setProps, getState, getProps }) => ({
+
+        update () {
+
+            exposed.updatePropsTitle({ 
+                props: getProps(),
+                state: getState()
+             })
+        }
+    })
 
     return {
         state,
         props,
         template,
-        styles
+        styles,
+        events,
+        methods,
+        hooks
     }
 }
 
