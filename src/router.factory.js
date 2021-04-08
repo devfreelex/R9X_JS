@@ -1,4 +1,4 @@
-import { componentFactory } from './component.js'
+import { componentFactory } from './component.factory.js'
 
 const routerFactory = () => {
 
