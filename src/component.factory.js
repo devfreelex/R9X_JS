@@ -17,7 +17,7 @@ const componentFactory = (factory, element) => {
         children,
         expose,
         styles
-    } = factory()
+    } = factory({ componentElement: element })
 
 
     const stateManager = stateManagerFactory()

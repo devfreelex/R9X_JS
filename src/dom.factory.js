@@ -46,7 +46,8 @@ const domFactory = () => {
     return (element) => ({ 
         on, 
         queryOnce: (selector) => _queryOnce(selector, element), 
-        queryAll: (selector) => _queryAll(selector, element)
+        queryAll: (selector) => _queryAll(selector, element),
+        elm: element        
     })   
 }
 
